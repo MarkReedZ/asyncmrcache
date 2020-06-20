@@ -6,9 +6,11 @@ matrix:
       services:
         - docker
       env: PIP=pip
-    - os: osx
-      language: generic
-      env: PIP=pip3
+
+python:
+    - "3.5"
+    - "3.6"
+    - "3.7"
 
 env:
   global:
