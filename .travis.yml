@@ -6,11 +6,10 @@ matrix:
       services:
         - docker
       env: PIP=pip
-
-python:
-    - "3.5"
-    - "3.6"
-    - "3.7"
+    - python: 3.5
+    - python: 3.6
+    - python: 3.7
+    - python: 3.8
 
 env:
   global:
