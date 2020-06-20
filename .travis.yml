@@ -1,4 +1,9 @@
 language: python
+python:
+  - 3.5
+  - 3.6
+  - 3.7
+  - 3.8
 
 matrix:
   include:
@@ -6,17 +11,13 @@ matrix:
       services:
         - docker
       env: PIP=pip
-    - python: 3.5
-    - python: 3.6
-    - python: 3.7
-    - python: 3.8
 
 env:
   global:
     - TWINE_USERNAME=MarkReedZ
 
 script:
-  - $PIP install cibuildwheel==1.4.2
+  - pip install cibuildwheel==1.4.2
   - cibuildwheel --output-dir wheelhouse
   - |
     if [[ $TRAVIS_TAG ]]; then
