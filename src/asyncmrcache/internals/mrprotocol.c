@@ -118,7 +118,7 @@ PyObject* MrProtocol_connection_made(MrProtocol* self, PyObject* transport)
   if(!(self->respq_put_nowait = PyObject_GetAttrString(self->respq, "put_nowait"))) return NULL;
   Py_XDECREF(func);
 
-  MrClient_addConnection( (MrClient*)(self->client), self );
+  MrClient_add_connection( (MrClient*)(self->client), self );
 
   //char tst[64] = "*2\r\n$3\r\nget\r\n$3\r\nkey\r\n";
   //PyObject *bytes = PyBytes_FromStringAndSize( tst, 22 );
@@ -232,7 +232,7 @@ PyObject* MrProtocol_data_received(MrProtocol* self, PyObject* data)
       }
       uint32_t sz  = *((uint32_t*)(p+2));
      
-      if ( data_left < 6+sz ) {
+      if ( data_left < (6+sz) ) {
         buf_append( self, p, data_left );
         Py_RETURN_NONE;
       }
