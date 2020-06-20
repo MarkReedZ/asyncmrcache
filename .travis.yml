@@ -15,6 +15,7 @@ matrix:
 env:
   global:
     - TWINE_USERNAME=MarkReedZ
+    - CIBW_BUILD="pp* cp3?-*"
 
 script:
   - pip install cibuildwheel==1.4.0
