@@ -1,9 +1,4 @@
 language: python
-python:
-  - 3.5
-  - 3.6
-  - 3.7
-  - 3.8
 
 matrix:
   include:
@@ -15,7 +10,7 @@ matrix:
 env:
   global:
     - TWINE_USERNAME=MarkReedZ
-    - CIBW_BUILD="pp* cp3?-*"
+    - CIBW_BUILD="pp3* cp3?-*"
 
 script:
   - pip install cibuildwheel==1.4.0
