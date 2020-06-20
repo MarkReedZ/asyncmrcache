@@ -17,7 +17,7 @@ env:
     - TWINE_USERNAME=MarkReedZ
 
 script:
-  - pip install cibuildwheel==1.4.2
+  - pip install cibuildwheel==1.4.0
   - cibuildwheel --output-dir wheelhouse
   - |
     if [[ $TRAVIS_TAG ]]; then
