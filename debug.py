@@ -1,7 +1,6 @@
 
 import asyncio, time
 import asyncmrcache
-import zstandard as zstd
 
 def err(data, i):
   print( "ERROR ", data[i-10:i+10] )

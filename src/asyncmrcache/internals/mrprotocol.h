@@ -8,7 +8,8 @@ typedef struct {
 
   PyObject* transport;
   PyObject* write;
-  PyObject* client;
+  PyObject* server;
+  PyObject* client; // TODO remove
   PyObject* respq;
   PyObject* respq_put_nowait;
 

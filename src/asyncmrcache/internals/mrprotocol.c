@@ -73,6 +73,7 @@ PyObject * MrProtocol_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
   self->transport = NULL;
   self->write = NULL;
   self->client = NULL;
+  self->server = NULL;
 
   self->max_sz = 32*1024;
   self->buf_sz = 0;
@@ -97,8 +98,8 @@ int MrProtocol_init(MrProtocol* self, PyObject *args, PyObject *kw)
   DBG printf("Mr protocol init\n");
   self->closed = true;
 
-  if(!PyArg_ParseTuple(args, "O", &self->client)) return -1;
-  Py_INCREF(self->client);
+  if(!PyArg_ParseTuple(args, "O", &self->server)) return -1;
+  Py_INCREF(self->server);
 
   return 0;
 }
@@ -113,19 +114,10 @@ PyObject* MrProtocol_connection_made(MrProtocol* self, PyObject* transport)
 
   if(!(self->write      = PyObject_GetAttrString(transport, "write"))) return NULL;
 
-  PyObject *func = PyObject_GetAttrString(self->client, "get_new_respq"); if ( func == NULL ) return NULL;
-  if(!(self->respq            = PyObject_CallFunction(func, NULL))) return NULL;
+  // Add connection sets my self->respq
+  MrServer_add_connection( (MrServer*)(self->server), self );
   if(!(self->respq_put_nowait = PyObject_GetAttrString(self->respq, "put_nowait"))) return NULL;
-  Py_XDECREF(func);
-
-  MrClient_add_connection( (MrClient*)(self->client), self );
-
-  //char tst[64] = "*2\r\n$3\r\nget\r\n$3\r\nkey\r\n";
-  //PyObject *bytes = PyBytes_FromStringAndSize( tst, 22 );
-  //PyObject *o;
-  //if(!(o = PyObject_CallFunctionObjArgs(self->write, bytes, NULL))) return NULL;
-  //Py_DECREF(o);
-
+  DBG printf("MrProtocol conn made done\n");
   Py_RETURN_NONE;
 }
 
@@ -156,19 +148,18 @@ PyObject* MrProtocol_connection_lost(MrProtocol* self, PyObject* args)
 {
   DBG printf("MrProtocol conn lost\n");
   self->closed = true;
-  MrClient_connection_lost((MrClient*)self->client, self );
+  MrServer_connection_lost((MrServer*)self->server, self );
   Py_RETURN_NONE;
 }
 
 PyObject *MrProtocol_pause_writing(MrProtocol* self) {
-  MrClient_pause_writing((MrClient*)self->client);
+  //MrClient_pause_writing((MrClient*)self->client);
   Py_RETURN_NONE;
 }
 PyObject *MrProtocol_resume_writing(MrProtocol* self) {
-  MrClient_resume_writing((MrClient*)self->client);
+  //MrClient_resume_writing((MrClient*)self->client);
   Py_RETURN_NONE;
 }
-
 
 void buf_append(MrProtocol* self, char *data, int len ) {
   //DBG printf(" append cur %d \n", c->cur_sz);
@@ -196,6 +187,7 @@ PyObject* MrProtocol_data_received(MrProtocol* self, PyObject* data)
 
   PyObject *o;
 
+  printf("1\n");
   char *p, *start;
   Py_ssize_t l;
   if(PyBytes_AsStringAndSize(data, &start, &l) == -1) Py_RETURN_NONE;
@@ -210,6 +202,7 @@ PyObject* MrProtocol_data_received(MrProtocol* self, PyObject* data)
   } else {
     p = start;
   }
+  printf("2\n");
 
 
   int num = 0;
@@ -240,10 +233,13 @@ PyObject* MrProtocol_data_received(MrProtocol* self, PyObject* data)
       
       PyObject *ret = PyBytes_FromStringAndSize( p, sz );
       if ( ret && sz > 0 ) {
+        printf("3\n");
         if(!(o = PyObject_CallFunctionObjArgs(self->respq_put_nowait, ret, NULL))) return NULL;
       } else {
+        printf("4\n");
         if(!(o = PyObject_CallFunctionObjArgs(self->respq_put_nowait, Py_None, NULL))) return NULL;
       }
+      printf("5\n");
       Py_DECREF(o);
       Py_XDECREF(ret);
 
@@ -254,7 +250,7 @@ PyObject* MrProtocol_data_received(MrProtocol* self, PyObject* data)
       //PyObject_Print( data, stdout, 0 ); 
       printf("Unexpected response opcode!!\n");
       MrProtocol_close(self);
-      MrClient_connection_lost((MrClient*)self->client, self );
+      MrServer_connection_lost((MrServer*)self->server, self );
       Py_RETURN_NONE;
     }
   }

@@ -1,7 +1,6 @@
 
 import asyncio, time
 import asyncmrcache
-import zstandard as zstd
 
 import uvloop
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
@@ -13,7 +12,106 @@ def lcb(client):
 
 async def run(loop):
 
-  rc = await asyncmrcache.create_client("localhost", loop, pool_size=1,lost_cb=lcb)
+  #print("1")
+  #await asyncio.sleep(2)
+  #print("1")
+  #await asyncio.sleep(2)
+  #print("1")
+
+  #rc = await asyncmrcache.create_client( [("localhost",7000),("localhost",7001)], loop, lost_cb=lcb)
+  #rc = await asyncmrcache.create_client( [("localhost",7000)], loop, pool_size=2,lost_cb=lcb)
+  rc = await asyncmrcache.create_client( [("localhost",7000)], loop, lost_cb=lcb)
+
+  if 0:
+    await rc.set(b"test1",b"tets1")
+    print(await rc.get(b"test1"))
+    await rc.set(b"test2",b"tets2")
+    print(await rc.get(b"test2"))
+    print(await rc.get(b"test1"))
+    print(await rc.get(b"test1"))
+    print(await rc.get(b"test2"))
+    print(await rc.get(b"test2"))
+
+    for x in range(2):
+      futs = []
+      futs.append( rc.get(b"test1") )
+      futs.append( rc.get(b"test2") )
+      futs.append( rc.get(b"test1") )
+      futs.append( rc.get(b"test2") )
+      futs.append( rc.get(b"test1") )
+      futs.append( rc.get(b"test2") )
+      futs.append( rc.get(b"test2") )
+      futs.append( rc.get(b"test2") )
+      futs.append( rc.get(b"test2") )
+      futs.append( rc.get(b"test1") )
+      ret = await asyncio.gather(*futs)
+      for v in ret:
+        print(v)
+      #rc.stat()
+      await asyncio.sleep(2)
+
+    exit()
+
+  await rc.set(b"test1",b"tets1")
+  await rc.set(b"test2",b"tets2")
+  await rc.set(b"test3",b"tets3")
+  await rc.set(b"test4",b"tets4")
+  await rc.set(b"test5",b"tets5")
+  await rc.set(b"test6",b"tets6")
+  await rc.set(b"test7",b"tets7")
+  await rc.set(b"test8",b"tets8")
+  await rc.set(b"test9",b"tets9")
+  await rc.set(b"test10",b"tets10")
+  await rc.set(b"test11",b"tets11")
+
+  while 1:
+    print("top")
+    futs = []
+    #print(await rc.get(b"test1"))
+    futs.append( rc.get(b"test1") )
+    futs.append( rc.get(b"test2") )
+    futs.append( rc.get(b"test3") )
+    futs.append( rc.get(b"test4") )
+    futs.append( rc.get(b"test5") )
+    futs.append( rc.get(b"test6") )
+    futs.append( rc.get(b"test7") )
+    futs.append( rc.get(b"test8") )
+    futs.append( rc.get(b"test9") )
+    futs.append( rc.get(b"test10") )
+
+    try:  
+      print("before gather")
+      ret = await asyncio.gather(*futs)
+    except Exception as e:
+      print(" Connection failed waiting 5: ",e)
+      await asyncio.sleep(5)
+      continue
+    futs = []
+    for v in ret:
+      print(v)
+    print("A")
+    await asyncio.sleep(1)
+    print("B")
+  
+
+  print("before close")
+  await rc.close()
+  print("after close")
+
+
+  exit()
+
+  await rc.set(b"test1",b"test1")
+  await rc.set(b"test2",b"test2")
+  await rc.set(b"test3",b"test3")
+  await rc.set(b"test4",b"test4")
+  
+  print(await rc.get(b"test1"))
+  print(await rc.get(b"test2"))
+  print(await rc.get(b"test3"))
+  print(await rc.get(b"test4"))
+  
+  exit() 
 
   num_items = 2000
   item_sz = 10000
