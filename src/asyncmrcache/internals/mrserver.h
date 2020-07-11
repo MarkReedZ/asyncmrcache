@@ -11,6 +11,7 @@ typedef struct MrServer {
   MrProtocol *conn;
 
   PyObject *py_conns;
+  PyObject *conns;
   PyObject *queues;
  
   bool closed; 
@@ -35,6 +36,7 @@ void MrServer_next_connection( MrServer* self );
 
 PyObject *MrServer_pause_writing(MrServer* self);
 PyObject *MrServer_resume_writing(MrServer* self);
+PyObject *MrServer_server_restored(MrServer* self);
 
 
 

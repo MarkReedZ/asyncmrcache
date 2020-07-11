@@ -1,7 +1,7 @@
 
 
 #include <Python.h>
-#include "structmember.h"
+#include <python3.8d/structmember.h>
 #include <stdbool.h>
 
 #include "mrserver.h"
@@ -19,10 +19,13 @@ static PyMethodDef MrServer_methods[] = {
   //{"_stat", (PyCFunction)MrServer_stat, METH_VARARGS,   ""},
   {"pause_writing",  (PyCFunction)MrServer_pause_writing, METH_NOARGS,   ""},
   {"resume_writing", (PyCFunction)MrServer_resume_writing, METH_NOARGS,   ""},
+  {"server_restored", (PyCFunction)MrServer_server_restored, METH_NOARGS,   ""},
   {NULL}
 };
 
 static PyMemberDef MrServer_members[] = {
+    {"conns", T_OBJECT, offsetof(MrServer, conns), 0, "MrServer conns"},
+    {"queues", T_OBJECT, offsetof(MrServer, queues), 0, "MrServer queues"},
     {"reconnecting", T_BOOL, offsetof(MrServer, reconnecting), 0, "MrServer reconnecting"},
     {NULL}
 };
@@ -86,10 +89,10 @@ void MrServer_dealloc(MrServer* self) {
 int MrServer_init(MrServer* self, PyObject *args, PyObject *kwargs) {
 
   DBG printf("MrServer init\n");
+  self->conn = NULL;
   //if(!(self->pause      = PyObject_GetAttrString((PyObject*)self, "pause"))) return 1;
   //if(!(self->resume     = PyObject_GetAttrString((PyObject*)self, "resume"))) return 1;
   //self->num_conns = 0;
-  //self->conns = malloc( sizeof(MrProtocol*) * 160 );
   return 0;
 }
 
@@ -100,9 +103,6 @@ void MrServer_cinit(MrServer* self, MrClient *client) {
   self->num_conns = 0;
   self->next_conn = 0;
 
-  self->py_conns = PyObject_GetAttrString((PyObject*)self, "conns");
-  if (self->py_conns == NULL)  { printf("conns null\n"); exit(1); } // DELME
-
 }
 PyObject *MrServer_pause_writing(MrServer* self) {
   //PyObject_CallFunction(self->pause, NULL);
@@ -112,13 +112,16 @@ PyObject *MrServer_resume_writing(MrServer* self) {
   //PyObject_CallFunction(self->resume, NULL);
   Py_RETURN_NONE;
 }
+PyObject *MrServer_server_restored(MrServer* self) {
+  Py_RETURN_NONE;
+}
+
 
 int MrServer_add_connection( MrServer *self, MrProtocol *conn) {
   DBG printf("MrServer add conn %p num %d\n", conn, self->num_conns);
 
-  PyObject *qs = PyObject_GetAttrString((PyObject*)self, "queues");
-  conn->respq = PyList_GET_ITEM( qs, self->num_conns++ );
-  self->conn = conn;
+  conn->respq = PyList_GET_ITEM( self->queues, self->num_conns++ );
+  Py_INCREF(conn->respq);
 
   return 0;
 }
@@ -133,28 +136,17 @@ void MrServer_connection_lost( MrServer* self, MrProtocol* conn ) {
   // Tell the client we're down
   self->num_conns -= 1;
   MrClient_server_lost( self->client );
+  Py_DECREF(conn->respq);
+  conn->respq = NULL;
+  
 
-/*j
-  self->num_conns--;
-  self->next_conn = 0;
-  if ( self->num_conns == 0 ) {
-    DBG printf("  No more memcached connections\n");
-    return;
-  }
-
-  // Remove the connection by shifting the rest left    
-  MrProtocol **p = self->conns;
-  for (int i = 0; i < self->num_conns+1; i++) {
-    p[i] = self->conns[i];
-    if ( self->conns[i] != conn ) p++;
-  }
- */ 
 }
 
 void MrServer_next_connection( MrServer *self ) {
   //if ( self->closed ) return 0;
-  self->next_conn = (self->next_conn+1) % PyList_GET_SIZE(self->py_conns);
-  self->conn = (MrProtocol*)PyList_GET_ITEM(self->py_conns, self->next_conn);
+  int sz = PyList_GET_SIZE(self->conns); if ( sz == 0 ) { self->conn = NULL; return; }
+  self->next_conn = (self->next_conn+1) % sz;
+  self->conn = (MrProtocol*)PyList_GET_ITEM(self->conns, self->next_conn);
   //return 1;
 }
 

@@ -187,7 +187,6 @@ PyObject* MrProtocol_data_received(MrProtocol* self, PyObject* data)
 
   PyObject *o;
 
-  printf("1\n");
   char *p, *start;
   Py_ssize_t l;
   if(PyBytes_AsStringAndSize(data, &start, &l) == -1) Py_RETURN_NONE;
@@ -202,7 +201,6 @@ PyObject* MrProtocol_data_received(MrProtocol* self, PyObject* data)
   } else {
     p = start;
   }
-  printf("2\n");
 
 
   int num = 0;
@@ -233,13 +231,10 @@ PyObject* MrProtocol_data_received(MrProtocol* self, PyObject* data)
       
       PyObject *ret = PyBytes_FromStringAndSize( p, sz );
       if ( ret && sz > 0 ) {
-        printf("3\n");
         if(!(o = PyObject_CallFunctionObjArgs(self->respq_put_nowait, ret, NULL))) return NULL;
       } else {
-        printf("4\n");
         if(!(o = PyObject_CallFunctionObjArgs(self->respq_put_nowait, Py_None, NULL))) return NULL;
       }
-      printf("5\n");
       Py_DECREF(o);
       Py_XDECREF(ret);
 

@@ -1,6 +1,8 @@
 import asyncio
 import asyncmrcache
 
+import gc #DELME
+
 class Server(asyncmrcache.CMrServer):
   def __init__(self, loop, client, host, port, pool_size=1):
     self.loop = loop
@@ -16,6 +18,9 @@ class Server(asyncmrcache.CMrServer):
     #print(self.queues)
     self.conns = []
     self.transports = []
+    print(" init ref ", gc.get_referrers(self.conns) )
+    print(" init ref ", gc.get_referrers(self.transports) )
+  
 
     #self._pause_waiter = None TODO here or client?
 
@@ -30,7 +35,6 @@ class Server(asyncmrcache.CMrServer):
         except asyncio.TimeoutError:
           print("TODO timeout on connection")
           exit(1)
-      #print("setup conns", self.queues)
 
     except ConnectionRefusedError:
       print("Could not connect to the mrcache server(s)")
@@ -47,8 +51,6 @@ class Server(asyncmrcache.CMrServer):
       t.close()
 
   def clear_queues(self):
-    #print("clear queues: ",self.queues)
-    return
     for q in self.queues:
       try:
         while not q.empty():
@@ -75,11 +77,6 @@ class Server(asyncmrcache.CMrServer):
   async def reconnect(self):
     self.conns = []
     self.transports = []
-    #try:
-      #print("reconn", self.queues)
-    #except Exception as e:
-      #print("AA", e)
-#
     while True:
 
       if self.connection_attempts < 3:
@@ -91,27 +88,20 @@ class Server(asyncmrcache.CMrServer):
 
       try:
         self.connection_attempts += 1
-        print(" DELME reconnect attempt ",self.connection_attempts)
         for x in range(self.pool_size):
-          #print("reconn 2", self.queues)
           fut = self.loop.create_connection(lambda: asyncmrcache.MrProtocol(self), self.host, self.port)
           try:
             (trans, protocol) = await asyncio.wait_for(fut, timeout=1)
-            #print("reconn 3", self.queues)
-            print("A")
             self.conns.append( protocol )
             self.transports.append( trans )
-            #print("reconn 4", self.queues)
-            print("B")
           except asyncio.TimeoutError:
             print("Reconnect timed out to", s.host, "port", s.port)
             asyncio.ensure_future( self.reconnect() )
             return
         self.connection_attempts = 0
         self.reconnecting = False 
-        #print("B queues: ",self.queues)
+        self.server_restored()
         self.client.server_back_online()
-        #print("C queues: ",self.queues)
         return
       except ConnectionRefusedError:
         print("Reconnect failed to", self.host, "port", self.port)

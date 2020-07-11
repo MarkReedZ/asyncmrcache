@@ -2,6 +2,9 @@
 import asyncio, time
 import asyncmrcache
 
+import tracemalloc
+tracemalloc.start()
+
 import uvloop
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
@@ -48,7 +51,7 @@ async def run(loop):
       for v in ret:
         print(v)
       #rc.stat()
-      await asyncio.sleep(2)
+      await asyncio.sleep(1)
 
     exit()
 
@@ -80,7 +83,6 @@ async def run(loop):
     futs.append( rc.get(b"test10") )
 
     try:  
-      print("before gather")
       ret = await asyncio.gather(*futs)
     except Exception as e:
       print(" Connection failed waiting 5: ",e)
@@ -89,9 +91,7 @@ async def run(loop):
     futs = []
     for v in ret:
       print(v)
-    print("A")
     await asyncio.sleep(1)
-    print("B")
   
 
   print("before close")

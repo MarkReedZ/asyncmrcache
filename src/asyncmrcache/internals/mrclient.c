@@ -70,7 +70,6 @@ PyObject *MrClient_new(PyTypeObject* type, PyObject *args, PyObject *kwargs) {
 }
 
 void MrClient_dealloc(MrClient* self) {
-  printf("dealloc called\n");
 }
 
 
@@ -111,7 +110,6 @@ void MrClient_setup(MrClient *self) {
   for ( int i=0; i < self->num_servers; i++ ) {
     if ( !self->servers[i]->reconnecting ) self->num_healthy += 1;
   }
-  printf(" MrClient_setup num healthy %d\n", self->num_healthy);
   if ( self->num_healthy == 0 ) return;
   
 
@@ -124,7 +122,6 @@ void MrClient_setup(MrClient *self) {
 
 }
 PyObject *MrClient_server_back_online(MrClient* self) {
-  printf("MrClient server back\n");
   MrClient_setup(self);
   Py_RETURN_NONE;
 }
@@ -142,7 +139,6 @@ PyObject *MrClient_resume_writing(MrClient* self) {
 }
 
 void MrClient_server_lost( MrClient* self ) {
-  printf("MrClient server lost\n");
   MrClient_setup(self);
 }
 
