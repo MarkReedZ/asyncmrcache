@@ -11,9 +11,9 @@ asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 def lcb(client):
   pass
   #test( client.debug_data )
-    
 
 async def run(loop):
+
 
   #print("1")
   #await asyncio.sleep(2)
@@ -25,7 +25,8 @@ async def run(loop):
   #rc = await asyncmrcache.create_client( [("localhost",7000)], loop, pool_size=2,lost_cb=lcb)
   rc = await asyncmrcache.create_client( [("localhost",7000)], loop, lost_cb=lcb)
 
-  if 0:
+
+  if 1:
     await rc.set(b"test1",b"tets1")
     print(await rc.get(b"test1"))
     await rc.set(b"test2",b"tets2")

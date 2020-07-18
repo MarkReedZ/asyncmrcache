@@ -74,7 +74,8 @@ void MrClient_dealloc(MrClient* self) {
 
 
 #define MAX_SERVERS 8192
-static char buf[1025*1024]; // TODO dynamically size the buffer
+#define BUFLEN 2*1024*1024
+static char buf[BUFLEN+1]; // TODO dynamically size the buffer
 static int srvmap[MAX_SERVERS];
 
 int MrClient_init(MrClient* self, PyObject *args, PyObject *kwargs) {
@@ -213,6 +214,13 @@ PyObject *MrClient_set(MrClient* self, PyObject *args) { //PyObject *key, PyObje
   char *vp;
   PyBytes_AsStringAndSize(val, &vp, &vlen);   // Can't copy directly in
   *vlenp = (uint32_t)vlen;
+
+  if ( klen > 65535 ) {
+    PyErr_SetString(PyExc_ValueError, "Key length greater than the maximum of 65535"); return NULL;
+  }
+  if ( klen+vlen > BUFLEN-8 ) {
+    PyErr_SetString(PyExc_ValueError, "Key + value length greater than the maximum of 2mb"); return NULL;
+  }
 
   memcpy(buf+8, kp, klen);
   memcpy(buf+8+klen, vp, vlen);

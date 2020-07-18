@@ -18,9 +18,6 @@ class Server(asyncmrcache.CMrServer):
     #print(self.queues)
     self.conns = []
     self.transports = []
-    print(" init ref ", gc.get_referrers(self.conns) )
-    print(" init ref ", gc.get_referrers(self.transports) )
-  
 
     #self._pause_waiter = None TODO here or client?
 
