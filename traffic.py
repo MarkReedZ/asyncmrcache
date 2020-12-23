@@ -77,7 +77,7 @@ def getRandomHotKey(rc):
 
 async def run(loop):
 
-  rc = await asyncmrcache.create_client("localhost", loop, pool_size=1,lost_cb=lost_conn)
+  rc = await asyncmrcache.create_client([("localhost",7000)], loop)
   await setup(rc)
 
   #snapshot1 = tracemalloc.take_snapshot()
