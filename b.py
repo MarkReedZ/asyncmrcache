@@ -17,12 +17,14 @@ async def setup():
   global rc
   rc = await asyncmrcache.create_client("localhost", loop, pool_size=1)
 
+  await rc.set(b"test10",b"some_value")
 
 async def bench():
 
   async def timget(func, *args, **kwargs):
     num = 0
     numfuts = 100
+    # Warmup
     for x in range(100):
       futs = []
       for y in range(numfuts):
@@ -49,10 +51,10 @@ async def bench():
     e = time.time()
     print( num/(e-s)," Requests/second")
 
-  print("\nBenchmarking get\n")
-  await timget(rc.get, b"test")
+  print("\nBenchmarking 10 byte get\n")
+  await timget(rc.get, b"test10")
 
-
+  rc.stat()
   print("")
   print("")
 

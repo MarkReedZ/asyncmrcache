@@ -14,19 +14,10 @@ def lcb(client):
 
 async def run(loop):
 
+  rc = await asyncmrcache.create_client( "localhost", loop, lost_cb=lcb)
 
-  #print("1")
-  #await asyncio.sleep(2)
-  #print("1")
-  #await asyncio.sleep(2)
-  #print("1")
-
-  #rc = await asyncmrcache.create_client( [("localhost",7000),("localhost",7001)], loop, lost_cb=lcb)
-  #rc = await asyncmrcache.create_client( [("localhost",7000)], loop, pool_size=2,lost_cb=lcb)
-  rc = await asyncmrcache.create_client( [("localhost",7000)], loop, lost_cb=lcb)
-
-  print(await rc.get(b"AeeRmoU2PqMdfg0ACeCqkE7gbCuc3J94"))
-  exit()
+  #print(await rc.get(b"AeeRmoU2PqMdfg0ACeCqkE7gbCuc3J94"))
+  #exit()
 
   if 1:
     await rc.set(b"test1",b"tets1")
