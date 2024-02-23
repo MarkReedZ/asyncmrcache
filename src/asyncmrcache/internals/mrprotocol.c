@@ -250,54 +250,6 @@ PyObject* MrProtocol_data_received(MrProtocol* self, PyObject* data)
     }
   }
   while ( data_left );
-/*
-  if(PyBytes_AsStringAndSize(data, &start, &l) == -1) Py_RETURN_NONE;
-
-  p = start;
-  do {
-    // No session found
-    if ( p[0] == 'E' ) {
-      p += 5;
-      tMrCallback cb = self->queue[self->queue_start].cb;
-      cb(self->queue[self->queue_start].connection, NULL, 0);
-      self->queue_start = (self->queue_start+1)%self->queue_sz;
-    }
-    // Session found
-    // TODO The session key length must be 32 , allow variable and check performance
-    else if ( p[0] == 'V' ) {
-      p += 50;
-      int vlen = 0;
-      while( *p != '\r' ) {
-        vlen = (*p-'0') + 10*vlen;
-        p += 1;
-      } 
-      p += 2;
-
-      if ( l < (60+vlen) ) {
-        printf("Partial memc response! vlen %d l %ld\n",vlen,l);
-        PyObject_Print( data, stdout, 0 ); 
-        printf("\n");
-        exit(1);
-      }
-
-      char *buf = malloc( vlen );
-      memcpy(buf, p, vlen);
-      tMrCallback cb = self->queue[self->queue_start].cb;
-      cb(self->queue[self->queue_start].connection, buf, vlen);
-      free(buf);
-      self->queue_start = (self->queue_start+1)%self->queue_sz;
-
-      p += vlen + 7;  
-        
-    } else {
-      printf("Bad memc response data len %ld\n", strlen(p));
-      PyObject_Print( data, stdout, 0 ); 
-      printf("\n");
-      exit(1);
-    }
-  }
-  while ( p < (start+l) );
-*/
 
   Py_RETURN_NONE;
 }

@@ -14,7 +14,7 @@ class Server(asyncmrcache.CMrServer):
     self.reconnecting = False
     self.connection_attempts = 0
     for x in range(pool_size):
-      self.queues.append( asyncio.Queue(loop=self.loop) )
+      self.queues.append( asyncio.Queue() )
     #print(self.queues)
     self.conns = []
     self.transports = []
