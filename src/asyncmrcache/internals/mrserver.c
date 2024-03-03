@@ -142,6 +142,7 @@ void MrServer_connection_lost( MrServer* self, MrProtocol* conn ) {
 
 }
 
+// TODO 1 connection is faster so remove this
 void MrServer_next_connection( MrServer *self ) {
   //if ( self->closed ) return 0;
   int sz = PyList_GET_SIZE(self->conns); if ( sz == 0 ) { self->conn = NULL; return; }

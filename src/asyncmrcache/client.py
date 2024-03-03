@@ -67,6 +67,15 @@ class Client(asyncmrcache.CMrClient):
     #if self._pause_waiter != None:
       #await self._pause_waiter
 
+  async def getz(self, key):
+    q = self._getz(key)
+    ret = await q.get()
+    q.task_done()
+    return ret
+
+  async def setz(self, key, val):
+    self._setz(key, val)
+
   def stat(self):
     self._stat()
 

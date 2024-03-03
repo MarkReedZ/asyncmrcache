@@ -177,13 +177,9 @@ void buf_append(MrProtocol* self, char *data, int len ) {
 PyObject* MrProtocol_data_received(MrProtocol* self, PyObject* data)
 {
   if (self->closed) Py_RETURN_NONE;
-  DBG printf("memcached protocol - data recvd\n");
+  DBG printf("mrcache protocol - data recvd\n");
   DBG PyObject_Print( data, stdout, 0 ); 
   DBG printf("\n");
-
-  // DELME debug
-  //PyObject *func = PyObject_GetAttrString(self->client, "push_data");
-  //PyObject_CallFunctionObjArgs(func, data, NULL);
 
   PyObject *o;
 
@@ -206,30 +202,29 @@ PyObject* MrProtocol_data_received(MrProtocol* self, PyObject* data)
   int num = 0;
   do {
 
-    if ( data_left < 2 ) {
+    if ( data_left < 4 ) {
       buf_append( self, p, data_left );
       Py_RETURN_NONE;
-      printf("data left < 2\n");
-      exit(1);
     }
-    int cmd = p[1];
+    int32_t sz  = *((int32_t*)(p));
+    DBG printf(" sz %d\n",sz);
 
-    if ( cmd == 1 ) { // get response
-      if ( data_left < 6 ) {
-        buf_append( self, p, data_left );
-        Py_RETURN_NONE;
-        data_left = 0;
-        exit(1);
-      }
-      uint32_t sz  = *((uint32_t*)(p+2));
+    if ( sz == 0 ) {
+      if(!(o = PyObject_CallFunctionObjArgs(self->respq_put_nowait, Py_None, NULL))) return NULL;
+      Py_DECREF(o);
+      p += 4;
+      data_left -= 4;
+    }
+    else if ( sz > 0 ) { // get response
      
-      if ( data_left < (6+sz) ) {
+      if ( data_left < (4+sz) ) {
         buf_append( self, p, data_left );
         Py_RETURN_NONE;
       }
-      p += 6;
+      p += 4;
       
       PyObject *ret = PyBytes_FromStringAndSize( p, sz );
+      DBG PyObject_Print( ret, stdout, 0 ); 
       if ( ret && sz > 0 ) {
         if(!(o = PyObject_CallFunctionObjArgs(self->respq_put_nowait, ret, NULL))) return NULL;
       } else {
@@ -239,7 +234,7 @@ PyObject* MrProtocol_data_received(MrProtocol* self, PyObject* data)
       Py_XDECREF(ret);
 
       p += sz;
-      data_left -= 6+sz;
+      data_left -= 4+sz;
 
     } else {
       //PyObject_Print( data, stdout, 0 ); 

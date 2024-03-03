@@ -31,6 +31,8 @@ PyObject *MrClient_server_back_online( MrClient* self );
 
 PyObject *MrClient_get(MrClient* self, PyObject *key);
 PyObject *MrClient_set(MrClient* self, PyObject *args);
+PyObject *MrClient_getz(MrClient* self, PyObject *key);
+PyObject *MrClient_setz(MrClient* self, PyObject *args);
 PyObject *MrClient_stat(MrClient* self, PyObject *args);
 //int MrClient_get(MrClient* self, char *key, void *fn, void *connection );
 //PyObject *MrClient_set(MrClient* self, PyObject *args);
