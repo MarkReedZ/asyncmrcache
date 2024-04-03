@@ -14,7 +14,7 @@ def lcb(client):
 
 async def run(loop):
 
-  rc = await asyncmrcache.create_client( "localhost", loop, lost_cb=lcb)
+  rc = await asyncmrcache.create_client( [("localhost",7000)], loop, lost_cb=lcb)
 
   #print(await rc.get(b"AeeRmoU2PqMdfg0ACeCqkE7gbCuc3J94"))
   #exit()
