@@ -167,7 +167,14 @@ PyObject *MrClient_get(MrClient* self, PyObject *key) {
 
   Py_ssize_t klen;
   char *kp;
-  PyBytes_AsStringAndSize(key, &kp, &klen); 
+  if ( PyBytes_Check(key) ) {
+    PyBytes_AsStringAndSize(key, &kp, &klen); 
+  } else if ( PyUnicode_Check(key) ) {
+    kp = PyUnicode_AsUTF8AndSize(key,&klen);
+  } else {
+    PyErr_Format(PyExc_TypeError, "Expected String or bytes");
+    return NULL;
+  }
 
   int s = srvmap[CityHash64(kp, klen) & 0x1FFF];
   MrServer *srv = self->servers[s];
@@ -210,7 +217,14 @@ PyObject *MrClient_set(MrClient* self, PyObject *args) { //PyObject *key, PyObje
 
   Py_ssize_t klen;
   char *kp;
-  PyBytes_AsStringAndSize(key, &kp, &klen);   // Can't copy directly in
+  if ( PyBytes_Check(key) ) {
+    PyBytes_AsStringAndSize(key, &kp, &klen); 
+  } else if ( PyUnicode_Check(key) ) {
+    kp = PyUnicode_AsUTF8AndSize(key,&klen);
+  } else {
+    PyErr_Format(PyExc_TypeError, "Expected String or bytes");
+    return NULL;
+  }
   *klenp = (uint16_t)klen;
 
   Py_ssize_t vlen;
@@ -258,15 +272,30 @@ PyObject *MrClient_getz(MrClient* self, PyObject *key) {
   PyObject *bytes;
 
   // TODO Accept unicode or bytes and throw if not
-
-
   Py_ssize_t klen;
   char *kp;
-  PyBytes_AsStringAndSize(key, &kp, &klen); 
+
+  if ( PyBytes_Check(key) ) {
+    PyBytes_AsStringAndSize(key, &kp, &klen); 
+  } else if ( PyUnicode_Check(key) ) {
+    kp = PyUnicode_AsUTF8AndSize(key,&klen);
+  } else {
+    PyErr_Format(PyExc_TypeError, "Expected String or bytes");
+    return NULL;
+  }
+
+
+  DBG printf(" getz \n");
+  DBG printf(" getz key len(%d): \n", klen);
+  DBG PyObject_Print( key, stdout, 0 );
+  DBG printf(" wtf \n");
 
   int s = srvmap[CityHash64(kp, klen) & 0x1FFF];
+  DBG printf(" after srvmap \n");
   MrServer *srv = self->servers[s];
+  DBG printf(" after srv \n");
   MrServer_next_connection(srv);
+  DBG printf(" after next conn \n");
 
   buf[0] = 0;
   buf[1] = 3;
@@ -275,7 +304,8 @@ PyObject *MrClient_getz(MrClient* self, PyObject *key) {
   memcpy(buf+4, kp, klen);
   
   bytes = PyBytes_FromStringAndSize( buf, klen+4 );
-
+  DBG printf(" Writing bytes obj: \n");
+  DBG PyObject_Print( bytes, stdout, 0 );
 
 
   if(!(o = PyObject_CallFunctionObjArgs(srv->conn->write, bytes, NULL))) return NULL;
@@ -305,7 +335,14 @@ PyObject *MrClient_setz(MrClient* self, PyObject *args) { //PyObject *key, PyObj
 
   Py_ssize_t klen;
   char *kp;
-  PyBytes_AsStringAndSize(key, &kp, &klen);   // Can't copy directly in
+  if ( PyBytes_Check(key) ) {
+    PyBytes_AsStringAndSize(key, &kp, &klen); 
+  } else if ( PyUnicode_Check(key) ) {
+    kp = PyUnicode_AsUTF8AndSize(key,&klen);
+  } else {
+    PyErr_Format(PyExc_TypeError, "Expected String or bytes");
+    return NULL;
+  }
   *klenp = (uint16_t)klen;
 
   Py_ssize_t vlen;
