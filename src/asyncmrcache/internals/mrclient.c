@@ -213,7 +213,7 @@ PyObject *MrClient_set(MrClient* self, PyObject *args) { //PyObject *key, PyObje
   uint16_t *klenp = (uint16_t*)(buf+2);
   int32_t *vlenp = (int32_t*)(buf+4);
 
-  if (!PyArg_ParseTuple(args, "SS", &key, &val)) return NULL;
+  if (!PyArg_ParseTuple(args, "OO", &key, &val)) return NULL;
 
   Py_ssize_t klen;
   char *kp;
@@ -331,7 +331,7 @@ PyObject *MrClient_setz(MrClient* self, PyObject *args) { //PyObject *key, PyObj
   uint16_t *klenp = (uint16_t*)(buf+2);
   uint32_t *vlenp = (uint32_t*)(buf+4);
 
-  if (!PyArg_ParseTuple(args, "SS", &key, &val)) return NULL;
+  if (!PyArg_ParseTuple(args, "OO", &key, &val)) return NULL;
 
   Py_ssize_t klen;
   char *kp;
